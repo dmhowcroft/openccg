@@ -1,31 +1,44 @@
-import sys, optparse, os, codecs
-from ner_word import NERWord
-import math
-
 """
 Take Stanford 'inlineXML' output from stdin, pipe processed version thereof to stdout.
 
-E.g., 
+E.g.,
 
 $ echo "This is a <ORGANIZATION>US Dept of Defense</ORGANIZATION> example ." | python post-process-stanford-ner.py
 This is a US_Dept_of_Defense_ORGANIZATION example .
 
-Type: 
+Type:
 
-$ python post-process-stanford-ner.py -h 
+$ python post-process-stanford-ner.py -h
 
 for help on the command-line options.
 """
 
-def fuseNERWords(list_of_ner_words):
-    return "_".join([nerWrd.getWord() for nerWrd in list_of_ner_words] + [list_of_ner_words[0].getLabel()])
+import codecs
+import math
+import optparse
+import os
+import sys
 
-op = optparse.OptionParser()
-op.add_option("--known_verbs", type="string", \
-                  help="file containing known verbs (for split-at-verb-boundary heuristic) [defaults to an empty list of known verbs]",\
-                  default=None)
+from ner_word import NERWord
 
-(ops, args) = op.parse_args()
+SPARKY_IRRELEVANT_NE_LABELS = {"MONEY"}
+
+
+def fuseNERWords(list_of_ner_words, labels_to_ignore):
+    # If the NER category isn't one we care about, don't fuse the words and the category
+    if list_of_ner_words[0].getLabel() in labels_to_ignore:
+        return " ".join([nerWrd.getWord() for nerWrd in list_of_ner_words])
+    # Otherwise, fuse them together with underscores
+    else:
+        return "_".join([nerWrd.getWord() for nerWrd in list_of_ner_words] + [list_of_ner_words[0].getLabel()])
+
+
+optparser = optparse.OptionParser()
+optparser.add_option("--known_verbs", type="string",
+                     help="file containing known verbs (for split-at-verb-boundary heuristic) [defaults to an empty list of known verbs]",
+                     default=None)
+
+(ops, args) = optparser.parse_args()
 
 known_verbs = set([v.strip() for v in open(ops.known_verbs, "rb").readlines()]) if not ops.known_verbs is None else set()
 puncts = set([',', "'", '"', ".", "?", "!"])
@@ -57,12 +70,12 @@ for l in sys.stdin:
                     current_NE = ne
                     current_group = [prt]
                 else:
-                    res.append(fuseNERWords(current_group))
+                    res.append(fuseNERWords(current_group, SPARKY_IRRELEVANT_NE_LABELS))
                     current_NE = ne
                     current_group = [prt]
         else:
             if not current_NE is None:
-                res.append(fuseNERWords(current_group))
+                res.append(fuseNERWords(current_group, SPARKY_IRRELEVANT_NE_LABELS))
                 current_NE = None
                 current_group = None
             res.append(wd)
@@ -70,7 +83,7 @@ for l in sys.stdin:
         i += 1
     
     if not current_NE is None:
-        res.append(fuseNERWords(current_group))
+        res.append(fuseNERWords(current_group, SPARKY_IRRELEVANT_NE_LABELS))
 
     print " ".join(res)
 
