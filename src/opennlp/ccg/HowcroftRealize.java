@@ -89,12 +89,7 @@ public class HowcroftRealize
             out = new PrintWriter(System.out);
         }
 
-        // remember, modify prefs
         Preferences prefs = Preferences.userNodeForPackage(TextCCG.class);
-        boolean oldShowCompleteness = prefs.getBoolean(Edge.SHOW_COMPLETENESS, false);
-        boolean oldShowBitset = prefs.getBoolean(Edge.SHOW_BITSET, false);
-        prefs.putBoolean(Edge.SHOW_COMPLETENESS, true);
-        prefs.putBoolean(Edge.SHOW_BITSET, true);
 
         // load grammar
         URL grammarURL = new File(grammarfile).toURI().toURL();
@@ -150,50 +145,56 @@ public class HowcroftRealize
             }
         }
 
-        // run request
+        lf = grammar.transformLF(lf);
+
         realizer.realize(lf);//, ngramScorer);
-        Chart chart = realizer.getChart();
+        System.out.println("Doing the thing, Dave!");
+        opennlp.ccg.realize.Chart chart = realizer.getChart();
+
+        // run request
+//        realizer.realize(lf);//, ngramScorer);
+//        Chart chart = realizer.getChart();
         chart.out = out;
 
-        out.println();
-        out.println("Preds:");
-        chart.printEPs();
-        
-        out.println();
-        out.println("LF chunks:");
-        chart.printLfChunks();
-
-        out.println();
-        out.println("LF alts:");
-        chart.printLfAlts();
-
-        out.println();
-        out.println("LF optional parts:");
-        chart.printLfOpts();
-
-        out.println();
-        out.println("Initial Edges:");
-        chart.printInitialEdges();
-
-        out.println();
-        out.println("Marked Edges:");
-        chart.printMarkedEdges(); 
-        
-        out.println();
-        out.println("Instantiated Semantically Null Edges:");
-        chart.printInstantiatedNoSemEdges();
-
-        out.println();
-        out.println("Uninstantiated Semantically Null Edges:");
-        chart.printNoSemEdges();
-
-        out.println();
-        out.println("Rule Instances:");
-        chart.printRuleInstances();
-
-        out.println();
-        out.println("All Edges:");
-        chart.printEdges();
+//        out.println();
+//        out.println("Preds:");
+//        chart.printEPs();
+//
+//        out.println();
+//        out.println("LF chunks:");
+//        chart.printLfChunks();
+//
+//        out.println();
+//        out.println("LF alts:");
+//        chart.printLfAlts();
+//
+//        out.println();
+//        out.println("LF optional parts:");
+//        chart.printLfOpts();
+//
+//        out.println();
+//        out.println("Initial Edges:");
+//        chart.printInitialEdges();
+//
+//        out.println();
+//        out.println("Marked Edges:");
+//        chart.printMarkedEdges();
+//
+//        out.println();
+//        out.println("Instantiated Semantically Null Edges:");
+//        chart.printInstantiatedNoSemEdges();
+//
+//        out.println();
+//        out.println("Uninstantiated Semantically Null Edges:");
+//        chart.printNoSemEdges();
+//
+//        out.println();
+//        out.println("Rule Instances:");
+//        chart.printRuleInstances();
+//
+//        out.println();
+//        out.println("All Edges:");
+//        chart.printEdges();
 
         out.println();
         out.println("Complete Edges (unsorted):");
@@ -222,10 +223,5 @@ public class HowcroftRealize
             out.println(chart.bestJoinedEdge.getSign().getDerivationHistory());
             out.flush();
         }
-
-
-        // reset prefs
-        prefs.putBoolean(Edge.SHOW_COMPLETENESS, oldShowCompleteness);
-        prefs.putBoolean(Edge.SHOW_BITSET, oldShowBitset);
     }
 }
